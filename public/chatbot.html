@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manhattan Chicago Pizza - Chat Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .bot-avatar {
+            width: 50px;
+            height: 50px;
+            background: url('chatbot.png') center/cover;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .bot-text {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .user-text {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: #dee2e6;
+        }
+
+        .menu-item {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🍕 Manhattan Chicago Pizza</h1>
+            <p>Your friendly chat assistant - Ask me about our menu, hours, or specials!</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="bot-avatar"></div>
+                <div class="bot-text">
+                    Hi, I'm Manchi, your friendly chatbot! Ask me anything about our menu. ¡Habla español!
+                    <div class="quick-questions">
+                        <button class="quick-btn" onclick="askQuestion('What are your hours?')">Hours</button>
+                        <button class="quick-btn" onclick="askQuestion('Show me your pizza menu')">Pizza Menu</button>
+                        <button class="quick-btn" onclick="askQuestion('Any current deals?')">Deals</button>
+                        <button class="quick-btn" onclick="askQuestion('What is your address?')">Location</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="Ask about our menu, hours, or anything else..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const knowledgeBase = {
+            businessInfo: {
+                name: "Manhattan Chicago Pizzeria",
+                address: "12715 S Dixie Hwy, Pinecrest, FL 33156",
+                phone: "(786) 581-9240",
+                email: "manchipizza@gmail.com",
+                hours: {
+                    "Monday-Thursday": "11:00 AM - 10:00 PM",
+                    "Friday-Saturday": "11:00 AM - 11:00 PM",
+                    "Sunday": "12:00 PM - 10:00 PM"
+                },
+                onlineOrdering: "https://www.manhattanchicagopizzeria.com/online-ordering",
+                delivery: ["Uber Eats", "DoorDash"]
+            },
+            menu: {
+                deepDishPizza: [
+                    {name: "The Original", size: "Medium (12\")", description: "Tomato sauce, mozzarella, ground beef, sausage", price: "$19.99"},
+                    {name: "Spinach & Goat Cheese", size: "Large (14\")", description: "Spinach, goat cheese, garlic oil", price: "$31.99"},
+                    {name: "Hawaiian", size: "Medium (12\")", description: "Ham, pineapple, bacon", price: "$22.99"},
+                    {name: "Meat Lovers", size: "Large (14\")", description: "Pepperoni, sausage, bacon, ground beef", price: "$41.99"}
+                ],
+                nyStylePizza: [
+                    {name: "Liberty Supreme", size: "16\"", description: "12 toppings inc. meats & veggies", price: "$24.99"},
+                    {name: "Brooklyn Veggie", size: "16\"", description: "Artichokes, roasted peppers, spinach, feta", price: "$21.99"},
+                    {name: "White Pizza", size: "12\"", description: "Ricotta, mozzarella, garlic, olive oil", price: "$16.99"},
+                    {name: "Build-Your-Own", size: "24\" Party", description: "Base cheese + toppings", price: "$29.99"}
+                ],
+                calzones: [
+                    {name: "Empire State Calzone", description: "Ricotta, mozzarella, ham, mushrooms", price: "$13.99"},
+                    {name: "Broadway Stromboli", description: "Pepperoni, sausage, bacon, veggies", price: "$15.99"},
+                    {name: "Build-Your-Own", description: "Base + 4 toppings included", price: "$12.49"}
+                ],
+                appetizers: [
+                    {name: "Garlic Rolls (6-pc)", price: "$4.99"},
+                    {name: "Mozzarella Sticks (6-pc)", price: "$8.99"},
+                    {name: "Chicago Pepperoni Bacon Pinwheels", price: "$10.99"},
+                    {name: "Wings (12-pc)", price: "$14.99", note: "Buffalo/BBQ/Garlic Parm"}
+                ],
+                salads: [
+                    {name: "Antipasto Salad", price: "$12.99"},
+                    {name: "Caesar Salad", price: "$9.99", note: "+$4.99 with chicken"},
+                    {name: "Greek Salad", price: "$11.99"}
+                ],
+                pasta: [
+                    {name: "Spaghetti & Meatballs", price: "$14.99"},
+                    {name: "Chicken Alfredo", price: "$17.99"},
+                    {name: "Baked Ziti", price: "$15.99"},
+                    {name: "Lasagna", price: "$16.99"}
+                ],
+                desserts: [
+                    {name: "Cannoli", price: "$6.25"},
+                    {name: "Tiramisu", price: "$6.25"},
+                    {name: "NY Cheesecake", price: "$6.25"}
+                ],
+                beverages: [
+                    {name: "Sodas", price: "$2.75/can"},
+                    {name: "San Pellegrino", price: "$3.99"},
+                    {name: "Lemonade", price: "$3.50"}
+                ]
+            },
+            deals: [
+                {name: "Weekend Special", description: "20% off all deep-dish pizzas (Sat-Sun)"},
+                {name: "Family Bundle", description: "2 Large 14\" pizzas + garlic knots + 2L soda = $49.99"},
+                {name: "Lunch Special", description: "2 NY slices + soda = $8.99 (M-F 11AM-3PM)"},
+                {name: "Facebook Exclusive", description: "Free dessert with $40+ order (code: SWEET2025)"}
+            ],
+            notes: {
+                glutenFree: "Gluten-Free Crust: +$3.50",
+                catering: "Catering Orders: 48-hour notice required",
+                popular: "Most Popular Item: Liberty Supreme Pizza",
+                newest: "Newest Addition: Vegan sausage topping (June 2025)"
+            }
+        };
+
+        function addMessage(text, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            if (isUser) {
+                messageDiv.innerHTML = `<div class="user-text">${text}</div>`;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="bot-avatar">👨‍🍳</div>
+                    <div class="bot-text">${text}</div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function processQuery(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Hours
+            if (lowerQuery.includes('hour') || lowerQuery.includes('open') || lowerQuery.includes('close')) {
+                return `Our hours are:<br>
+                    📅 Monday-Thursday: ${knowledgeBase.businessInfo.hours['Monday-Thursday']}<br>
+                    📅 Friday-Saturday: ${knowledgeBase.businessInfo.hours['Friday-Saturday']}<br>
+                    📅 Sunday: ${knowledgeBase.businessInfo.hours['Sunday']}`;
+            }
+            
+            // Address/Location
+            if (lowerQuery.includes('address') || lowerQuery.includes('location') || lowerQuery.includes('where')) {
+                return `📍 We're located at: ${knowledgeBase.businessInfo.address}<br>📞 Phone: ${knowledgeBase.businessInfo.phone}`;
+            }
+            
+            // Phone
+            if (lowerQuery.includes('phone') || lowerQuery.includes('number') || lowerQuery.includes('call')) {
+                return `📞 You can call us at: ${knowledgeBase.businessInfo.phone}`;
+            }
+            
+            // Deals/Specials
+            if (lowerQuery.includes('deal') || lowerQuery.includes('special') || lowerQuery.includes('discount') || lowerQuery.includes('offer')) {
+                let response = "🎉 Current Deals & Specials:<br><br>";
+                knowledgeBase.deals.forEach(deal => {
+                    response += `<div class="menu-item"><strong>${deal.name}:</strong> ${deal.description}</div>`;
+                });
+                return response;
+            }
+            
+            // Pizza Menu
+            if (lowerQuery.includes('pizza') && (lowerQuery.includes('menu') || lowerQuery.includes('list') || lowerQuery.includes('show'))) {
+                let response = "🍕 Our Pizza Menu:<br><br>";
+                
+                response += "<strong>Deep Dish Chicago Style:</strong><br>";
+                knowledgeBase.menu.deepDishPizza.forEach(pizza => {
+                    response += `<div class="menu-item">${pizza.name} (${pizza.size}) - <span class="price">${pizza.price}</span><br>${pizza.description}</div>`;
+                });
+                
+                response += "<br><strong>New York Style:</strong><br>";
+                knowledgeBase.menu.nyStylePizza.forEach(pizza => {
+                    response += `<div class="menu-item">${pizza.name} (${pizza.size}) - <span class="price">${pizza.price}</span><br>${pizza.description}</div>`;
+                });
+                
+                return response;
+            }
+            
+            // Deep Dish specific
+            if (lowerQuery.includes('deep dish') || lowerQuery.includes('chicago')) {
+                let response = "🍕 Deep Dish Chicago Style Pizzas:<br><br>";
+                knowledgeBase.menu.deepDishPizza.forEach(pizza => {
+                    response += `<div class="menu-item">${pizza.name} (${pizza.size}) - <span class="price">${pizza.price}</span><br>${pizza.description}</div>`;
+                });
+                return response;
+            }
+            
+            // NY Style specific
+            if (lowerQuery.includes('new york') || lowerQuery.includes('ny style') || lowerQuery.includes('thin crust')) {
+                let response = "🍕 New York Style Pizzas:<br><br>";
+                knowledgeBase.menu.nyStylePizza.forEach(pizza => {
+                    response += `<div class="menu-item">${pizza.name} (${pizza.size}) - <span class="price">${pizza.price}</span><br>${pizza.description}</div>`;
+                });
+                return response;
+            }
+            
+            // Calzones
+            if (lowerQuery.includes('calzone') || lowerQuery.includes('stromboli')) {
+                let response = "🥟 Calzones & Stromboli:<br><br>";
+                knowledgeBase.menu.calzones.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span><br>${item.description}</div>`;
+                });
+                return response;
+            }
+            
+            // Appetizers
+            if (lowerQuery.includes('appetizer') || lowerQuery.includes('starter') || lowerQuery.includes('wings') || lowerQuery.includes('garlic')) {
+                let response = "🍤 Appetizers:<br><br>";
+                knowledgeBase.menu.appetizers.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span>`;
+                    if (item.note) response += `<br><em>${item.note}</em>`;
+                    response += `</div>`;
+                });
+                return response;
+            }
+            
+            // Salads
+            if (lowerQuery.includes('salad')) {
+                let response = "🥗 Salads:<br><br>";
+                knowledgeBase.menu.salads.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span>`;
+                    if (item.note) response += `<br><em>${item.note}</em>`;
+                    response += `</div>`;
+                });
+                return response;
+            }
+            
+            // Pasta
+            if (lowerQuery.includes('pasta') || lowerQuery.includes('spaghetti') || lowerQuery.includes('lasagna') || lowerQuery.includes('alfredo')) {
+                let response = "🍝 Pasta Dishes:<br><br>";
+                knowledgeBase.menu.pasta.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span></div>`;
+                });
+                return response;
+            }
+            
+            // Desserts
+            if (lowerQuery.includes('dessert') || lowerQuery.includes('sweet') || lowerQuery.includes('cannoli') || lowerQuery.includes('tiramisu')) {
+                let response = "🍰 Desserts:<br><br>";
+                knowledgeBase.menu.desserts.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span></div>`;
+                });
+                return response;
+            }
+            
+            // Beverages
+            if (lowerQuery.includes('drink') || lowerQuery.includes('beverage') || lowerQuery.includes('soda') || lowerQuery.includes('lemonade')) {
+                let response = "🥤 Beverages:<br><br>";
+                knowledgeBase.menu.beverages.forEach(item => {
+                    response += `<div class="menu-item">${item.name} - <span class="price">${item.price}</span></div>`;
+                });
+                return response;
+            }
+            
+            // Delivery
+            if (lowerQuery.includes('deliver') || lowerQuery.includes('uber') || lowerQuery.includes('doordash')) {
+                return `🚚 We offer delivery through:<br>• ${knowledgeBase.businessInfo.delivery.join('<br>• ')}<br><br>You can also order online at: <a href="${knowledgeBase.businessInfo.onlineOrdering}" target="_blank">${knowledgeBase.businessInfo.onlineOrdering}</a>`;
+            }
+            
+            // Online ordering
+            if (lowerQuery.includes('online') || lowerQuery.includes('order')) {
+                return `💻 Order online at: <a href="${knowledgeBase.businessInfo.onlineOrdering}" target="_blank">${knowledgeBase.businessInfo.onlineOrdering}</a><br><br>We also deliver through Uber Eats and DoorDash!`;
+            }
+            
+            // Gluten free
+            if (lowerQuery.includes('gluten') || lowerQuery.includes('dietary')) {
+                return `🌾 ${knowledgeBase.notes.glutenFree}<br><br>We also have vegan sausage topping available! ${knowledgeBase.notes.newest}`;
+            }
+            
+            // Popular items
+            if (lowerQuery.includes('popular') || lowerQuery.includes('recommend') || lowerQuery.includes('best')) {
+                return `⭐ ${knowledgeBase.notes.popular}<br><br>Also try our Original Deep Dish Pizza - it's what we're famous for! 🍕`;
+            }
+            
+            // Catering
+            if (lowerQuery.includes('cater') || lowerQuery.includes('party') || lowerQuery.includes('event')) {
+                return `🎉 ${knowledgeBase.notes.catering}<br><br>Call us at ${knowledgeBase.businessInfo.phone} to discuss your catering needs!`;
+            }
+            
+            // Full menu
+            if (lowerQuery.includes('full menu') || lowerQuery.includes('entire menu') || lowerQuery.includes('everything')) {
+                return `📋 Here's our full menu! Use the quick buttons or ask about specific categories like "pizza menu", "appetizers", "pasta", "desserts", etc. I can also tell you about our current deals and specials! 🍕`;
+            }
+            
+            // Price questions
+            if (lowerQuery.includes('price') || lowerQuery.includes('cost') || lowerQuery.includes('how much')) {
+                return `💰 I can help you with pricing! Ask me about specific items like "pizza prices", "appetizer prices", or mention any dish you're interested in. You can also ask to see our full menu with prices!`;
+            }
+            
+            // General greeting responses
+            if (lowerQuery.includes('hello') || lowerQuery.includes('hi') || lowerQuery.includes('hey') || lowerQuery.includes('hola')) {
+                return `¡Hola! 👋 Welcome to Manhattan Chicago Pizza! I'm Machi, your friendly agent. ¡Habla español! I'm here to help you with our delicious menu, current deals, hours, and more. What would you like to know?`;
+            }
+            
+            // Thank you
+            if (lowerQuery.includes('thank') || lowerQuery.includes('thanks')) {
+                return `You're welcome! 😊 Is there anything else I can help you with today? Maybe I can tell you about our current specials or help you find the perfect pizza!`;
+            }
+            
+            // Default response
+            return `¡Hola! I'm Machi, your friendly agent! 🍕 ¡Habla español! I can tell you about:<br>
+                • Our pizza menu (deep dish & NY style)<br>
+                • Appetizers, salads, pasta & desserts<br>
+                • Current deals & specials<br>
+                • Hours & location<br>
+                • Online ordering & delivery<br><br>
+                Just ask me anything about Manhattan Chicago Pizza!`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, true);
+                input.value = '';
+                
+                setTimeout(() => {
+                    const response = processQuery(message);
+                    addMessage(response);
+                }, 500);
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Auto-focus input on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('messageInput').focus();
+        });
+    </script>
+</body>
+</html>
