@@ -179,6 +179,21 @@
             font-weight: bold;
             color: #28a745;
         }
+        
+        .window-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .window-btn:hover {
+            background-color: #229954;
+        }
     </style>
 </head>
 <body>
@@ -186,6 +201,7 @@
         <div class="chat-header">
             <h1>🍕 Manhattan Chicago Pizza</h1>
             <p>Your friendly chat assistant - Ask me about our menu, hours, or specials!</p>
+            <button onclick="openChatWindow()" class="window-btn">Open in Window</button>
         </div>
         
         <div class="chat-messages" id="chatMessages">
@@ -513,6 +529,179 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('messageInput').focus();
         });
+        
+        function openChatWindow() {
+            const chatWindow = window.open('', 'ChatBot', 'width=400,height=600,scrollbars=no,resizable=yes,location=no,menubar=no,toolbar=no');
+            
+            chatWindow.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manhattan Chicago Pizza - Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 100%;
+            width: 100%;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        .chat-header h3 {
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #fafafa;
+            max-height: 350px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: #3498db;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        #messageInput:focus {
+            border-color: #3498db;
+        }
+        
+        #sendBtn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        #sendBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        
+        .quick-buttons button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .quick-buttons button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h3>🍕 Chat with Machi</h3>
+            <p>¡Hola! I'm your friendly Manhattan Chicago Pizza assistant!</p>
+        </div>
+        
+        <div class="quick-buttons">
+            <button onclick="askQuestion('pizza menu')">🍕 Pizza Menu</button>
+            <button onclick="askQuestion('appetizers')">🥖 Appetizers</button>
+            <button onclick="askQuestion('pasta')">🍝 Pasta</button>
+            <button onclick="askQuestion('current deals')">💰 Deals</button>
+            <button onclick="askQuestion('hours')">🕒 Hours</button>
+            <button onclick="askQuestion('location')">📍 Location</button>
+        </div>
+        
+        <div id="chatMessages" class="chat-messages"></div>
+        
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Ask me about our menu, deals, hours..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <script>
+        ${document.querySelector('script').textContent.replace(/function openChatWindow\(\)[\s\S]*?^        }/gm, '')}
+    </script>
+</body>
+</html>
+            `);
+            
+            chatWindow.document.close();
+        }
     </script>
 </body>
 </html>

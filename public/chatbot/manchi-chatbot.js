@@ -839,9 +839,16 @@ export class ManchiChatbot {
             'Italian sandwiches': 'Sándwiches italianos'
         };
 
-        const chicagoHighlights = menuHighlights.pizzas.chicago;
-        const nyHighlights = menuHighlights.pizzas.newYork;
-        const otherItems = menuHighlights.otherItems;
+        // Fallback menu items if menuHighlights is not defined
+        const chicagoHighlights = (typeof menuHighlights !== 'undefined' && menuHighlights.pizzas) 
+            ? menuHighlights.pizzas.chicago 
+            : ['The Original Chicago Deep Dish', 'The Cheese Chicago Deep Dish', 'Liberty Supreme'];
+        const nyHighlights = (typeof menuHighlights !== 'undefined' && menuHighlights.pizzas) 
+            ? menuHighlights.pizzas.newYork 
+            : ['Margherita', 'Pepperoni', 'Supreme'];
+        const otherItems = (typeof menuHighlights !== 'undefined') 
+            ? menuHighlights.otherItems 
+            : ['Fresh pasta dishes', 'Garden salads', 'Italian sandwiches'];
 
         if (context.lastIntent === 'menu') {
             return lang === 'en'
@@ -915,14 +922,36 @@ export class ManchiChatbot {
     }
 
     findRelevantFaq(message, lang) {
+        // Check if faq is defined and has the right structure
+        if (typeof faq === 'undefined' || !faq) {
+            return null;
+        }
+
         let bestMatch = null;
         let highestScore = 0;
 
-        for (const [question, answer] of Object.entries(faq)) {
-            const score = this.fuzzyMatch(message, question.toLowerCase().split(/\s+/));
-            if (score > highestScore) {
-                highestScore = score;
-                bestMatch = answer;
+        // Handle different FAQ structures
+        const faqData = faq[lang] || faq;
+        
+        if (Array.isArray(faqData)) {
+            // FAQ is an array of objects with question/answer
+            for (const item of faqData) {
+                if (item.question && item.answer) {
+                    const score = this.fuzzyMatch(message, item.question.toLowerCase().split(/\s+/));
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestMatch = item.answer;
+                    }
+                }
+            }
+        } else if (typeof faqData === 'object') {
+            // FAQ is an object with question-answer pairs
+            for (const [question, answer] of Object.entries(faqData)) {
+                const score = this.fuzzyMatch(message, question.toLowerCase().split(/\s+/));
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = answer;
+                }
             }
         }
 
@@ -944,13 +973,13 @@ export class ManchiChatbot {
     }
     }
 
-    matchesPattern(message, patterns) {
-        return patterns.some(pattern => message.includes(pattern.toLowerCase()));
-    }
-
     extractURLs(text) {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.match(urlRegex) || [];
+    }
+
+    matchesPattern(message, patterns) {
+        return patterns.some(pattern => message.includes(pattern.toLowerCase()));
     }
 
     async fetchURLContent(url) {
@@ -1022,10 +1051,25 @@ export class ManchiChatbot {
     }
 
     getRandomFAQ() {
-        const faqs = faq[this.language];
-        const randomIndex = Math.floor(Math.random() * faqs.length);
-        const selectedFaq = faqs[randomIndex];
-        return `${selectedFaq.question}\n\n${selectedFaq.answer}`;
+        // Check if faq is defined
+        if (typeof faq === 'undefined' || !faq) {
+            return this.language === 'en' 
+                ? "I'm here to help with any questions about our menu, hours, or delivery!"
+                : "¡Estoy aquí para ayudarte con cualquier pregunta sobre nuestro menú, horarios o entregas!";
+        }
+
+        const faqs = faq[this.language] || faq;
+        
+        if (Array.isArray(faqs) && faqs.length > 0) {
+            const randomIndex = Math.floor(Math.random() * faqs.length);
+            const selectedFaq = faqs[randomIndex];
+            return `${selectedFaq.question}\n\n${selectedFaq.answer}`;
+        }
+        
+        // Fallback response
+        return this.language === 'en' 
+            ? "I'm here to help with any questions about our menu, hours, or delivery!"
+            : "¡Estoy aquí para ayudarte con cualquier pregunta sobre nuestro menú, horarios o entregas!";
     }
 
     getCurrentTime() {
