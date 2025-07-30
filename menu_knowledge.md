@@ -5,8 +5,9 @@
 - **Address:** 12715 South Dixie Highway, Pinecrest, FL 33156
 - **Phone:** (786) 581-9240 / (786) 306-8231
 - **Website:** https://manhattanchicago.com / https://www.manhattanchicagopizzeria.com
-- **Hours:** Mon-Thu: 11:00 AM - 10:00 PM, Fri-Sat: 11:00 AM - 11:00 PM, Sun: 12:00 PM - 9:00 PM
+- **Hours:** Mon-Sat: 11:00 AM - 3:00 AM, Sun: 12:00 PM - 2:00 AM
 - **Services:** Delivery, takeout, curbside pickup, dine-in (limited indoor seating, outdoor seating available)
+- **Late-Night Delivery:** For orders after 10pm, customers should use the special late-night menu at https://order.online/business/manhattan-chicago-pizzeria-47610 (main drivers available only until 10pm). The website has a button in the store hours section with a confirmation popup that opens the late-night menu in a new tab.
 - **Delivery:** $3.85 fee within 3 miles, $15 minimum order, 30-60 minute delivery time
 - **Rating:** 4.5/5 stars with 2000+ reviews
 
